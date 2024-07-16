@@ -26,18 +26,6 @@ local requestfunc = syn and syn.request or http and http.request or http_request
 	}
 end 
 
-local queueteleport = syn and syn.queue_on_teleport or queue_on_teleport or fluxus and fluxus.queue_on_teleport
-if queueteleport then
-	print("queuetp module found")
-end
-
-if shared.RequireTable == nil then
-	if queueteleport then
-		queueteleport(bypassScript)
-		game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, game.JobId, lplr)
-	end
-end
-
 local pf = {}
 local votekicked = 0
 local votekickedsuccess = 0
